@@ -1,4 +1,5 @@
 import sys
+import time
 
 class RoomInfo:
   def __init__(self, id, capacity):
@@ -33,6 +34,8 @@ class ScheduledClass:
     self.students = []
 
 def createSchedule(constraints, studentprefs, finalschedule):
+  start = time.perf_counter()
+
   fileC = open(constraints, "r")
   fileP = open(studentprefs, "r")
   s = 0
@@ -105,6 +108,10 @@ def createSchedule(constraints, studentprefs, finalschedule):
     scheduledCls = ScheduledClass(cls.id, slot.time, slot.room, rooms[slot.room-1].capacity, cls.prof)
     professors[cls.prof-1].times.append(slot.time)
     schedule[cls.id-1] = scheduledCls
+
+  end = time.perf_counter()
+  elapsedtime = end - start
+  print(f"Runtime: {elapsedtime}")
 
   #Enroll students
   prefVal = 0

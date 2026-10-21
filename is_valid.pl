@@ -163,22 +163,18 @@ sub readConstraints {
     while (<CONSTRAINTS>) {
         chomp $_;
         if (/^Class Times\t(\d+)$/) {
-            print "times\n";
             $numslots = $1;
         }
         if (/^Rooms\t(\d+)$/) {
-            print "rooms\n";
             $numrooms = $1;
             $isroom = 1;
             next;
         }
         if (/^Classes\t(\d+)$/) {
-            print "classes\n";
             $numclasses = $1;
             $isroom = 0;
         }
         if (/^Teachers\t(\d+)$/) {
-            print "teachers\n";
             $numteachers = $1;
             $isclass = 1;
             next;
