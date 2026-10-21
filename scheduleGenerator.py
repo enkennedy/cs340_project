@@ -32,7 +32,7 @@ class ScheduledClass:
     self.numEnrolled = 0
     self.students = []
 
-def createSchedule(constraints, studentprefs, schedule):
+def createSchedule(constraints, studentprefs, finalschedule):
   fileC = open(constraints, "r")
   fileP = open(studentprefs, "r")
   s = 0
@@ -70,15 +70,15 @@ def createSchedule(constraints, studentprefs, schedule):
         cinfo = line.split()
         cls = ClassInfo(int(cinfo[0]), int(cinfo[1]))
         classPopularity.append(cls)
-        professors[j].classes.append(int(cinfo[0]))
+        professors[int(cinfo[1])-1].classes.append(int(cinfo[0]))
     line = fileC.readline()
   fileC.close()
 
   #Get preference info
-  line = fileP.readline
+  line = fileP.readline()
   l = line.split()
   s = int(l[1])
-  studentPreferences = [s][4]
+  studentPreferences = [[None] * 4 for _ in range(s)]
   for i in range(0,s):
     line = fileP.readline()
     l = line.split()
@@ -87,24 +87,24 @@ def createSchedule(constraints, studentprefs, schedule):
       classPopularity[int(l[j])-1].pop += 1
   fileP.close()
 
-  roomsSorted = rooms.sorted(key = lambda x: x.capacity)
+  roomsSorted = sorted(rooms, key = lambda x: x.capacity)
   classPopularity.sort(reverse = True, key = lambda x: x.pop)
 
   for room in roomsSorted:
     for i in reversed(range(0,t)):
-      slots.append(Slot(room,i+1))
+      slots.append(Slot(i+1,room.id))
 
   #Create the schedule
-    schedule = [c]
-    for cls in classPopularity:
+  schedule = [None] * c
+  for cls in classPopularity:
+    slot = slots.pop()
+    if slot.time in professors[cls.prof-1].times:
+      temp = slot
       slot = slots.pop()
-      if slot.time in professors[cls.prof-1].times:
-        temp = slot
-        slot = slots.pop()
-        slots.append(temp)
-      scheduledCls = ScheduledClass(cls.id, slot.time, slot.room, rooms[slot.room-1].capacity, cls.prof)
-      professors[cls.prof-1].times.append(slot.time)
-      schedule[cls.id-1] = scheduledCls
+      slots.append(temp)
+    scheduledCls = ScheduledClass(cls.id, slot.time, slot.room, rooms[slot.room-1].capacity, cls.prof)
+    professors[cls.prof-1].times.append(slot.time)
+    schedule[cls.id-1] = scheduledCls
 
   #Enroll students
   prefVal = 0
@@ -117,7 +117,7 @@ def createSchedule(constraints, studentprefs, schedule):
           prevCls = schedule[studentPreferences[row][j]-1]
           if prevCls.time == currCls.time:
             conflict = True
-        if ~conflict:
+        if not conflict:
           currCls.students.append(row+1)
           prefVal += 1
 
@@ -127,19 +127,19 @@ def createSchedule(constraints, studentprefs, schedule):
   print(f"Fit Percentage: {prefVal / (s * 4)}%")
 
   #Write to output
-  fileS = open(schedule, "w")
+  fileS = open(finalschedule, "w")
   fileS.write("Course Room Teacher Time Students\n")
   for cls in schedule:
-    fileS.write(cls.id + " " + cls.room + " " + cls.prof + " " + cls.time)
+    fileS.write(str(cls.id) + " " + str(cls.room) + " " + str(cls.prof) + " " + str(cls.time))
     for student in cls.students:
-      fileS.write(" " + student)
+      fileS.write(" " + str(student))
     fileS.write("\n")
   fileS.close()
 
 def main():
-  constraints = sys.argv[1]
-  studentprefs = sys.argv[2]
-  schedule = sys.argv[3]
+  constraints = str(sys.argv[1])
+  studentprefs = str(sys.argv[2])
+  schedule = str(sys.argv[3])
   createSchedule(constraints, studentprefs, schedule)
 
 if __name__ == "__main__":
