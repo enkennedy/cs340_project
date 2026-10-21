@@ -119,6 +119,7 @@ def createSchedule(constraints, studentprefs, finalschedule):
             conflict = True
         if not conflict:
           currCls.students.append(row+1)
+          currCls.numEnrolled += 1
           prefVal += 1
 
   #Output preference value and fit
@@ -128,11 +129,11 @@ def createSchedule(constraints, studentprefs, finalschedule):
 
   #Write to output
   fileS = open(finalschedule, "w")
-  fileS.write("Course Room Teacher Time Students\n")
+  fileS.write("Course\tRoom\tTeacher\tTime\tStudents\n")
   for cls in schedule:
-    fileS.write(str(cls.id) + " " + str(cls.room) + " " + str(cls.prof) + " " + str(cls.time))
+    fileS.write(str(cls.id) + "\t" + str(cls.room) + "\t" + str(cls.prof) + "\t" + str(cls.time) + "\t")
     for student in cls.students:
-      fileS.write(" " + str(student))
+      fileS.write(str(student) + " ")
     fileS.write("\n")
   fileS.close()
 
