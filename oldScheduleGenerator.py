@@ -18,6 +18,11 @@ class ProfessorInfo:
     self.classes = []
     self.times = []
 
+class Slot:
+  def __init__(self, time, room):
+    self.time = time
+    self.room = room
+
 class ScheduledClass:
   def __init__(self, id, time, room, capacity, prof):
     self.id = id
@@ -39,6 +44,7 @@ def createSchedule(constraints, studentprefs, finalschedule):
   t = 0
   p = 0
   rooms = []
+  slots = []
   classPopularity = []
   professors = []
   line = fileC.readline()
@@ -84,23 +90,24 @@ def createSchedule(constraints, studentprefs, finalschedule):
       classPopularity[int(l[j])-1].pop += 1
   fileP.close()
 
-  roomsSorted = sorted(rooms, key = lambda x: x.capacity, reverse = True)
+  roomsSorted = sorted(rooms, key = lambda x: x.capacity)
   classPopularity.sort(reverse = True, key = lambda x: x.pop)
 
-  roomBusy = {room.id: [False] * t for room in rooms}
+  for room in roomsSorted:
+    for i in reversed(range(0,t)):
+      slots.append(Slot(i+1,room.id))
+
+  #Create the schedule
   schedule = [None] * c
   for cls in classPopularity:
-    professor = professors[cls.prof-1]
-    for room in roomsSorted:
-      for slot in range(1, t + 1):
-        if not roomBusy[room.id][slot-1] and slot not in professor.times:
-          scheduledCls = ScheduledClass(cls.id, slot, room.id, room.capacity, cls.prof)
-          schedule[cls.id-1] = scheduledCls
-          roomBusy[room.id][slot-1] = True
-          professor.times.append(slot)
-          break
-      if schedule[cls.id-1] is not None:
-        break
+    slot = slots.pop()
+    if slot.time in professors[cls.prof-1].times:
+      temp = slot
+      slot = slots.pop()
+      slots.append(temp)
+    scheduledCls = ScheduledClass(cls.id, slot.time, slot.room, rooms[slot.room-1].capacity, cls.prof)
+    professors[cls.prof-1].times.append(slot.time)
+    schedule[cls.id-1] = scheduledCls
 
   end = time.perf_counter()
   elapsedtime = end - start
@@ -108,27 +115,29 @@ def createSchedule(constraints, studentprefs, finalschedule):
 
   #Enroll students
   prefVal = 0
-  studentBusy = [set() for _ in range(s)]
   for row in range(0,s):
-    for i in range(0,4):
+    for i in range(0,3):
       currCls = schedule[studentPreferences[row][i]-1]
-      if currCls is not None and currCls.numEnrolled < currCls.capacity and currCls.time not in studentBusy[row]:
-        currCls.students.append(row+1)
-        currCls.numEnrolled += 1
-        studentBusy[row].add(currCls.time)
-        prefVal += 1
+      if currCls.numEnrolled < currCls.capacity:
+        conflict = False
+        for j in range(0,i):
+          prevCls = schedule[studentPreferences[row][j]-1]
+          if prevCls.time == currCls.time:
+            conflict = True
+        if not conflict:
+          currCls.students.append(row+1)
+          currCls.numEnrolled += 1
+          prefVal += 1
 
   #Output preference value and fit
   print(f"Student Preference Value: {prefVal}")
   print(f"Best Case Student Preference Value: {s * 4}")
-  print(f"Fit Ratio: {prefVal / (s * 4)}")
+  print(f"Fit Percentage: {prefVal / (s * 4)}%")
 
   #Write to output
   fileS = open(finalschedule, "w")
   fileS.write("Course\tRoom\tTeacher\tTime\tStudents\n")
   for cls in schedule:
-    if cls is None:
-      continue
     fileS.write(str(cls.id) + "\t" + str(cls.room) + "\t" + str(cls.prof) + "\t" + str(cls.time) + "\t")
     for student in cls.students:
       fileS.write(str(student) + " ")
