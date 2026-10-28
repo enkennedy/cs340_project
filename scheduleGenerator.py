@@ -87,20 +87,29 @@ def createSchedule(constraints, studentprefs, finalschedule):
   roomsSorted = sorted(rooms, key = lambda x: x.capacity, reverse = True)
   classPopularity.sort(reverse = True, key = lambda x: x.pop)
 
-  roomBusy = {room.id: [False] * t for room in rooms}
   schedule = [None] * c
-  for cls in classPopularity:
+  currT = 1
+  currR = 0
+  len = c
+  for i in range(0,c):
+    room = roomsSorted[currR]
+    cls = classPopularity[-1]
     professor = professors[cls.prof-1]
-    for room in roomsSorted:
-      for slot in range(1, t + 1):
-        if not roomBusy[room.id][slot-1] and slot not in professor.times:
-          scheduledCls = ScheduledClass(cls.id, slot, room.id, room.capacity, cls.prof)
-          schedule[cls.id-1] = scheduledCls
-          roomBusy[room.id][slot-1] = True
-          professor.times.append(slot)
-          break
-      if schedule[cls.id-1] is not None:
-        break
+    idx = -1
+    while currT in professor.times and idx > -len:
+      idx -= 1
+      temp = classPopularity[idx]
+      professor = professors[temp.prof-1]
+    if currT not in professor.times:
+        cls = classPopularity.pop(idx)
+        len -= 1
+        scheduledCls = ScheduledClass(cls.id, currT, room.id, room.capacity, cls.prof)
+        schedule[cls.id-1] = scheduledCls
+        professor.times.append(currT)
+    currT += 1
+    if currT > t:
+      currT = 0
+      currR += 1
 
   end = time.perf_counter()
   elapsedtime = end - start
