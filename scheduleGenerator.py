@@ -110,6 +110,8 @@ def createSchedule(constraints, studentprefs, finalschedule):
     if currT > t:
       currT = 0
       currR += 1
+    if currR >= r:
+      break
 
   end = time.perf_counter()
   elapsedtime = end - start
