@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir test$1
+
 touch test$1/constraints_$1a.txt
 touch test$1/prefs_$1a.txt
 touch test$1/schedule_$1a.txt
