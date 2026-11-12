@@ -58,15 +58,27 @@ def getData(csv, constraints, prefs):
         t = str(row["Start_1"])
         t2 = t.split(":")
         if "AM" in t:
-            sTime = 60 * int(t2[0]) + int(t2[1][0:2])
+            if int(t2[0]) == 12:
+                sTime = int(t2[1][0:2])
+            else:
+                sTime = 60 * int(t2[0]) + int(t2[1][0:2])
         else:
-            sTime = 60 * (int(t2[0]) + 12) + int(t2[1][0:2])
+            if int(t2[0]) == 12:
+                sTime = 12 * 60 + int(t2[1][0:2])
+            else:
+                sTime = 60 * (int(t2[0]) + 12) + int(t2[1][0:2])
         t = str(row["End 1"])
         t2 = t.split(":")
         if "AM" in t:
-            eTime = 60 * int(t2[0]) + int(t2[1][0:2])
+            if int(t2[0]) == 12:
+                eTime = int(t2[1][0:2])
+            else:
+                eTime = 60 * int(t2[0]) + int(t2[1][0:2])
         else:
-            eTime = 60 * (int(t2[0]) + 12) + int(t2[1][0:2])
+            if int(t2[0]) == 12:
+                eTime = 12 * 60 + int(t2[1][0:2])
+            else:
+                eTime = 60 * (int(t2[0]) + 12) + int(t2[1][0:2])
         time = [sTime, eTime]
         if time not in times:
             times.append(time)
